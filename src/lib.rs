@@ -1,5 +1,8 @@
 extern crate nalgebra as na;
+extern crate regex;
 
+#[macro_use]
+extern crate lazy_static;
 #[cfg_attr(test, macro_use)]
 extern crate approx;
 
@@ -7,11 +10,13 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::collections::HashMap;
 use na::{geometry::Point3, Vector3};
+use regex::Regex;
 
 pub struct FoamMesh {
     pub boundary: Option<HashMap<String, Boundary>>,
     pub points: Vec<Point3<f64>>,
-    // pub faces: ???,
+    /// A face is defined as a list of point indices.
+    pub faces: Option<Vec<Vec<usize>>>,
     // pub owner: ???,
     // pub neighbor: ???,
     pub cell_centers: Option<Vec<Point3<f64>>>
@@ -36,9 +41,90 @@ impl FoamMesh {
         Ok(FoamMesh {
             boundary: get_if_file_found(
                 FoamMesh::parse_boundary(&pb.join("boundary"), 10))?,
-            points: Vec::new(),
+            points: FoamMesh::parse_points(&pb.join("points"), 10)?,
+            faces: get_if_file_found(
+                FoamMesh::parse_faces(&pb.join("faces"), 10))?,
             cell_centers: None
         })
+    }
+
+    /// Parse faces from a given ASCII file.
+    /// Each face is a list of point indices.
+    ///
+    /// Expects a file in the following format:
+    /// ```plaintext
+    /// // …
+    ///
+    /// 11360
+    /// (
+    /// 4(1 42 1723 1682)
+    /// 3(2 3 4)
+    /// // …
+    /// )
+    /// ```
+    fn parse_faces<P: AsRef<Path>>(
+        filename: P,
+        skip: usize
+    ) -> Result<Vec<Vec<usize>>, io::Error> {
+        lazy_static! {
+            static ref RE_NUM: Regex = Regex::new(
+                r"\d+"
+            ).unwrap();
+        }
+
+        let mut data: Vec<Vec<usize>> = Vec::new();
+        let mut num_faces_expected: usize = 0;
+        for (i, line) in std::fs::read_to_string(&filename)?
+                .split('\n')
+                .skip(skip)
+                .enumerate() {
+            if num_faces_expected > 0 {
+                // We already encountered the initial line stating
+                // the number of expected faces.
+                // Now read the actual data.
+                let mut vals: Vec<usize> = RE_NUM.captures_iter(&line)
+                    .map(|cap| cap[0].parse::<usize>().unwrap())
+                    .collect();
+                if vals.len() == 0 { continue; }
+                if vals.len() != vals[0] + 1 {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        format!(
+                            "Malformed faces file, l. {} (\"{}\"): \
+                            Mismatch between number of vertices announced \
+                            and found.",
+                            skip+i,
+                            line
+                        )
+                    ));
+                }
+                vals.remove(0);
+                data.push(vals);
+            } else if let Ok(num_faces) = line.parse::<usize>() {
+                if num_faces_expected > 0 {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        format!(
+                            "Malformed faces file, l. {}: \
+                            multiple numbers of expected faces.",
+                            skip+i
+                        )
+                    ));
+                }
+                num_faces_expected = num_faces;
+            }
+        }
+        if data.len() != num_faces_expected {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!(
+                    "{} faces expected, but parsed {}.",
+                    num_faces_expected,
+                    data.len()
+                )
+            ));
+        }
+        Ok(data)
     }
 
     /// Parse mesh point data from a given ASCII file.
@@ -99,7 +185,7 @@ impl FoamMesh {
                         io::ErrorKind::InvalidData,
                         format!(
                             "Malformed points file, l. {}: \
-                            multiple numbers of expected points",
+                            multiple numbers of expected points.",
                             skip+i
                         )
                     ));
@@ -324,5 +410,16 @@ mod tests {
             points[5042],
             Point3::new(0.1_f64, 0.1_f64, 0.01_f64)
         );
+    }
+
+    #[test]
+    fn test_parse_faces() {
+        let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        d.push("resources/test/cavity/constant/polyMesh/faces");
+        let faces: Vec<Vec<usize>> = FoamMesh::parse_faces(
+            d,
+            10 // defaul skip…
+        ).unwrap();
+        assert_eq!(faces[0], vec![1, 42, 1723, 1682]);
     }
 }
