@@ -1,18 +1,18 @@
 extern crate nalgebra as na;
 
 use std::io;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::collections::HashMap;
 use na::{geometry::Point3, Vector3};
 
 
 pub struct FoamMesh {
-    // pub boundary: ???,
+    pub boundary: Option<HashMap<String, Boundary>>,
     pub points: Vec<Point3<f64>>,
     // pub faces: ???,
     // pub owner: ???,
     // pub neighbor: ???,
-    pub cell_centers: Vec<Point3<f64>>
+    pub cell_centers: Option<Vec<Point3<f64>>>
     // pub cell_volumes: ???,
     // pub face_areas: ???
 }
@@ -26,11 +26,32 @@ pub struct Boundary {
 }
 
 impl FoamMesh {
-    pub fn new(path: &Path) -> Result<FoamMesh, &str> {
+    pub fn new<P: AsRef<Path>>(path: P) -> Result<FoamMesh, io::Error> {
+        /// Only return an error if the file exists.
+        /// If there is no error and the file exists, return the result.
+        fn unwrap_or_none_if_not_found<T>(
+            result: Result<T, io::Error>
+        ) -> Result<Option<T>, io::Error> {
+            match result {
+                Ok(r) => Ok(Some(r)),
+                Err(e) => {
+                    match e.kind() {
+                        io::ErrorKind::NotFound => { Ok(None) },
+                        _ => Err(e)
+                    }
+                }
+            }
+        }
+
+        let mut pb: PathBuf = PathBuf::new();
+        pb.push(path);
+        pb.push("constant/polyMesh/");
         // TODO
         Ok(FoamMesh {
+            boundary: unwrap_or_none_if_not_found(
+                FoamMesh::parse_boundary(&pb.join("boundary"), 10))?,
             points: Vec::new(),
-            cell_centers: Vec::new()
+            cell_centers: None
         })
     }
 
@@ -201,5 +222,9 @@ mod tests {
             d.as_path(),
             10 // default skip…
         ).unwrap();
+        let bd_fixed_wall = boundaries.get("fixedWalls").unwrap();
+        assert_eq!(bd_fixed_wall.boundary_type, "wall");
+        assert_eq!(bd_fixed_wall.num_faces, 240);
+        assert_eq!(bd_fixed_wall.start_face, 7920);
     }
 }
