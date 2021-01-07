@@ -1,5 +1,5 @@
 [package]
-name = "openfoamparser-rust"
+name = "openfoamparser_rust"
 version = "0.1.0"
 authors = ["Lukas Stratmann <stratmann@ccs-labs.org>"]
 edition = "2018"
