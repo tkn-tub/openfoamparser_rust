@@ -3,7 +3,6 @@ name = "openfoamparser_rust"
 version = "0.1.0"
 authors = ["Lukas Stratmann <stratmann@ccs-labs.org>"]
 edition = "2018"
-license = "GNU GPLv3"
 license-file = "LICENSE.md"
 description = "An OpenFOAM parser based on the openfoamparser Python package"
 repository = "https://github.com/tkn-tub/openfoamparser_rust"
