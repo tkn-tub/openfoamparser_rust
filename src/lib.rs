@@ -327,13 +327,9 @@ impl FoamMesh {
                 if !line.starts_with('(') || !line.ends_with(')') {
                     continue;
                 }
-                let point_vals: Vec<f64> = line
-                    .strip_prefix("(").unwrap()
-                    .strip_suffix(")").unwrap()
-                    .split(' ')
-                    .filter_map(|s| s.parse::<f64>().ok())
-                    .collect();
-                if point_vals.len() != 3 {
+                if let Some(v) = parse_point3(line) {
+                    data.push(v);
+                } else {
                     return Err(io::Error::new(
                         io::ErrorKind::InvalidData,
                         format!(
@@ -344,11 +340,6 @@ impl FoamMesh {
                         )
                     ));
                 }
-                data.push(Point3::new(
-                    point_vals[0],
-                    point_vals[1],
-                    point_vals[2]
-                ));
             } else if let Ok(num_points) = line.parse::<usize>() {
                 num_points_expected = num_points;
             }
@@ -603,7 +594,7 @@ fn parse_internal_field_data_uniform<T, F>(
 fn parse_internal_field_data_nonuniform<T, F>(
     content: &[String],
     start: usize,
-    end: usize,
+    _end: usize, // only needed for binary, not implemented yet
     parse_fn: F
 ) -> Result<Vec<T>, io::Error> where
         F: Fn(&str) -> Option<T> {
