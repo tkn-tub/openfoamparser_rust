@@ -1,14 +1,14 @@
-// openfoamparser_rust
+// openfoamparser
 // Copyright (C) 2020 Data Communications and Networking (TKN), TU Berlin
 //
-// This file is part of openfoamparser_rust.
+// This file is part of openfoamparser.
 //
-// openfoamparser_rust is free software: you can redistribute it and/or modify
+// openfoamparser is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// openfoamparser_rust is distributed in the hope that it will be useful,
+// openfoamparser is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
@@ -18,7 +18,7 @@
 
 //! OpenFOAM Parser
 //!
-//! openfoamparser_rust lets you parse OpenFOAM simulation results just
+//! openfoamparser lets you parse OpenFOAM simulation results just
 //! like the Python library [openfoamparser](https://github.com/ApolloLV/openfoamparser.git).
 //!
 //! # Getting Started
@@ -26,24 +26,28 @@
 //! The following example loads an existing vector field:
 //!
 //! ```
+//! extern crate nalgebra as na;
 //! use std::path::PathBuf;
 //! use na::{Vector3, Point3};
 //!
-//! use openfoamparser_rust as ofp;
+//! use openfoamparser as ofp;
 //!
-//! let d = PathBuf::from("/path/to/simulation/case/");
+//! let d: PathBuf = [
+//!     env!("CARGO_MANIFEST_DIR"),
+//!     "resources/test/cavity/"
+//! ].iter().collect();
 //!
 //! // Load the mesh (and nothing else):
 //! let mut fm = ofp::FoamMesh::new(&d).unwrap();
 //!
-//! // Load the cell centers from time step 0.8 s.
+//! // Load the cell centers from time step 0.5 s.
 //! // This requires that the following or a similar command has been run:
 //! // `runApplication postProcess -func writeCellCentres -latestTime`
-//! fm.read_cell_centers(d.join("0.8/C")).unwrap();
+//! fm.read_cell_centers(d.join("0.5/C")).unwrap();
 //!
 //! // Load the flow speeds from the same time step:
 //! let flow: Vec<Vector3<f64>> = ofp::parse_internal_field(
-//!     fm.path.join("0.8/U"),
+//!     fm.path.join("0.5/U"),
 //!     |s| ofp::parse_vector3(s)
 //! ).unwrap();
 //!
