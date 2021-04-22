@@ -20,6 +20,35 @@
 //!
 //! openfoamparser_rust lets you parse OpenFOAM simulation results just
 //! like the Python library [openfoamparser](https://github.com/ApolloLV/openfoamparser.git).
+//!
+//! # Getting Started
+//!
+//! The following example loads an existing vector field:
+//!
+//! ```
+//! use std::path::PathBuf;
+//! use na::{Vector3, Point3};
+//!
+//! use openfoamparser_rust as ofp;
+//!
+//! let d = PathBuf::from("/path/to/simulation/case/");
+//!
+//! // Load the mesh (and nothing else):
+//! let mut fm = ofp::FoamMesh::new(&d).unwrap();
+//!
+//! // Load the cell centers from time step 0.8 s.
+//! // This requires that the following or a similar command has been run:
+//! // `runApplication postProcess -func writeCellCentres -latestTime`
+//! fm.read_cell_centers(d.join("0.8/C")).unwrap();
+//!
+//! // Load the flow speeds from the same time step:
+//! let flow: Vec<Vector3<f64>> = ofp::parse_internal_field(
+//!     fm.path.join("0.8/U"),
+//!     |s| ofp::parse_vector3(s)
+//! ).unwrap();
+//!
+//! // …
+//! ```
 
 extern crate nalgebra as na;
 extern crate regex;
