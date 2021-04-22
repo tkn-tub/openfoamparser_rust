@@ -21,6 +21,9 @@
 //! openfoamparser lets you parse OpenFOAM simulation results just
 //! like the Python library [openfoamparser](https://github.com/ApolloLV/openfoamparser.git).
 //!
+//! Known limitations:
+//! - Parsing binary files is not supported yet.
+//!
 //! # Getting Started
 //!
 //! The following example loads an existing vector field:

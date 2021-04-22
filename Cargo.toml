@@ -1,6 +1,6 @@
 [package]
 name = "openfoamparser"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Lukas Stratmann <stratmann@ccs-labs.org>"]
 edition = "2018"
 license-file = "LICENSE.md"
