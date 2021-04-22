@@ -1,3 +1,26 @@
+// openfoamparser_rust
+// Copyright (C) 2020 Data Communications and Networking (TKN), TU Berlin
+//
+// This file is part of openfoamparser_rust.
+//
+// openfoamparser_rust is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// openfoamparser_rust is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Pogona.  If not, see <https://www.gnu.org/licenses/>.
+
+//! OpenFOAM Parser
+//!
+//! openfoamparser_rust lets you parse OpenFOAM simulation results just
+//! like the Python library [openfoamparser](https://github.com/ApolloLV/openfoamparser.git).
+
 extern crate nalgebra as na;
 extern crate regex;
 
