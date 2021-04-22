@@ -7,6 +7,9 @@ license-file = "LICENSE.md"
 description = "An OpenFOAM parser based on the openfoamparser Python package"
 repository = "https://github.com/tkn-tub/openfoamparser_rust"
 readme = "README.md"
+exclude = [
+    "resources/test/*",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
