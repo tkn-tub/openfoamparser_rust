@@ -6,5 +6,6 @@ like the Python library [openfoamparser](https://github.com/ApolloLV/openfoampar
 Known limitations:
 - Parsing binary files is not supported yet.
 
+Links:
 - [Crate on crates.io](https://crates.io/crates/openfoamparser)
 - [Documentation](https://docs.rs/openfoamparser)
